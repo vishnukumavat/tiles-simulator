@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.9.1.js"></script>
+    <!-- <link rel="stylesheet" type="text/css" href="./index.styles.css"> -->
+    <!-- <script src="./index.script.js"></script> -->
+    <title>Tiles Simulator</title>
+    <style>
+        .flex-container-row{
+            display: flex;
+            flex-direction: row;
+        }
+        
+        .flex-container-col{
+            display: flex;
+            flex-direction: column;
+        }
+
+        .design_image{
+            height: 120px;
+            width: 180px;
+        }
+        
+        .tiles{
+            height: 120px;
+            width: 180px;
+            border: solid 1px rgb(165, 165, 165);
+        }
+
+          .dropdown {
+            position: relative;
+            display: inline-block;
+          }
+          
+          .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f1f1f1;
+            min-width: 160px;
+            overflow: auto;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+          }
+          
+          .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+          }
+          
+          .dropdown a:hover {background-color: #ddd;}
+          
+          .show {display: block;}
+
+          #items{
+            list-style:none;
+            margin:0px;
+            margin-top:4px;
+            padding-left:10px;
+            padding-right:10px;
+            padding-bottom:3px;
+            font-size:17px;
+            color: #333333;
+            
+          }
+          hr { width: 85%; 
+            background-color:#E4E4E4;
+            border-color:#E4E4E4;
+              color:#E4E4E4;
+          }
+          #cntnr{
+            display:none;
+            position:fixed;
+            border:1px solid #B2B2B2;
+            width:150px;      background:#F9F9F9;
+            box-shadow: 3px 3px 2px #E9E9E9;
+            border-radius:4px;
+          }
+    
+          li{
+            
+            padding: 3px;
+            padding-left:10px;
+          }
+    
+    
+          #items :hover{
+            color: white;
+            background:#284570;
+            border-radius:2px;
+          }
+    </style>
+    <script>
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+        
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+        }
+        
+        function drop(ev) {
+            ev.preventDefault();
+            var data = ev.dataTransfer.getData("text");
+            var nodeCopy = document.getElementById(data).cloneNode(true);
+            nodeCopy.id =  Math.random().toString(36).substr(2, 10);
+            ev.target.appendChild(nodeCopy);
+        }
+        
+        function getCounts(){
+            let row_counts = document.getElementById('row-counts').innerText;
+            let col_counts = document.getElementById('col-counts').innerText;
+        
+            return {'row_counts' : JSON.parse(row_counts), 'col_counts' : JSON.parse(col_counts)}
+        }
+        
+        function parseStringToHTML(string){
+            let parser = new DOMParser();
+            let doc = parser.parseFromString(string, 'text/html');
+            return doc.body.firstChild
+        }
+        
+        function generateColumnElement(row_id,col_id){
+            let col_element = `<div id="row_${row_id}_col_${col_id}" class="tiles" ondrop="drop(event)" ondragover="allowDrop(event)"></div>`
+            return parseStringToHTML(col_element)
+        }
+        
+        function generateRowElement(row_id, col_id){
+            let new_row = document.createElement("DIV")
+            new_row.className = "flex-container-row"
+            new_row.id = `row_${row_id}`
+            for(let i=1; i<=col_id; i++){
+                let newColumnElement = generateColumnElement(row_id, i)
+                new_row.appendChild(newColumnElement)
+            }
+            return new_row
+        }
+        
+        function addRows(){
+            document.getElementById('delete_node_script');
+            let counts = getCounts()
+            let new_row_id = counts.row_counts+1
+            document.getElementById("row-counts").innerText = new_row_id;
+            let new_row = generateRowElement(counts.row_counts+1, counts.col_counts)
+            let mail_wall = document.getElementById("main_wall")
+            mail_wall.appendChild(new_row)
+        }
+        
+        function addColumns(){
+            let counts = getCounts()
+            let new_column_id = counts.col_counts+1
+            document.getElementById("col-counts").innerText = new_column_id;
+            for(let i=1; i<=counts.row_counts; i++){
+                let parent_row = document.getElementById(`row_${i}`)
+                let newColumnElement = generateColumnElement(i,new_column_id)
+                parent_row.appendChild(newColumnElement)
+            }
+        }
+        
+        function deleteRows(){
+            let row_id = getCounts().row_counts
+            if(row_id>1){
+                let rowElement = document.getElementById(`row_${row_id}`)
+                rowElement.remove()
+                document.getElementById("row-counts").innerText = row_id-1;
+            }
+        }
+        
+        function deleteColumns(){
+            let row_counts = getCounts().row_counts;
+            let col_counts = getCounts().col_counts;
+            if(col_counts>1){
+                for(let i=1; i<=row_counts; i++){
+                    document.getElementById(`row_${i}_col_${col_counts}`).remove()
+                }
+                document.getElementById("col-counts").innerText = col_counts-1;
+            }
+        }
+    </script>
+    <script>
+        /* When the user clicks on the button, 
+        toggle between hiding and showing the dropdown content */
+        function dropdownFunction() {
+          document.getElementById("myDropdown").classList.toggle("show");
+        }
+        
+        // Close the dropdown if the user clicks outside of it
+        window.onclick = function(event) {
+          if (!event.target.matches('.btn')) {
+            var dropdowns = document.getElementsByClassName("dropdown-content");
+            var i;
+            for (i = 0; i < dropdowns.length; i++) {
+              var openDropdown = dropdowns[i];
+              if (openDropdown.classList.contains('show')) {
+                openDropdown.classList.remove('show');
+              }
+            }
+          }
+        }
+    </script>
+</head>
+<body>
+    <div id="cntnr" style="left: 21px; top: 15px; display: none;">
+        <ul id="items">
+          <li onclick="deleteImage()">Delete</li>  
+        </ul>
+      </div>
+    <div class="flex-container-row">
+        <div class="flex-container-col" style="padding: 10px;">
+
+            <div>&nbsp;</div>
+            <a href="../logout/" align="center"><button class="btn btn-danger" type="button">Logout</button></a>
+
+            <div>&nbsp;</div>
+            <a href="../new/18/12" align="center"><button class="btn btn-danger" type="button">Add New Design</button></a>
+
+            <div>&nbsp;</div>
+            <button align="center" onclick="dropdownFunction()" class="btn btn-danger">Dropdown</button>
+            <div>&nbsp;</div>
+            <div class="dropdown">
+                <div id="myDropdown" class="dropdown-content">
+                    {% for data in image_url_data_list %}
+                        <form method="POST" action="">
+                            {% csrf_token %}
+                            <input type="text" name="design_id" value="{{data.id}}" hidden>
+                            <button align="center" id="{{data.id}}" type="submit" onclick="test('message sent')">
+                                <img class="design_image" src="{{data.high_lighter}}">
+                            </button>
+                        </form>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            {% if show_designs %}
+                <div>&nbsp;</div>
+                <img id="light" src="{{light_image_url}}" draggable="true" ondragstart="drag(event)" class="design_image">
+                <div>&nbsp;</div>
+                <img id="higth_light" src="{{high_lighter_1_image_url}}" draggable="true" ondragstart="drag(event)" class="design_image">
+                <div>&nbsp;</div>
+                <img id="dark" src="{{dark_image_url}}" draggable="true" ondragstart="drag(event)" class="design_image">
+                <div>&nbsp;</div>
+                <p>Tile Number : {{tile_number}}</p>
+                <div>&nbsp;</div>
+            {% endif %}
+
+            <p align="center">Modify Rows</p>
+            <div class="flex-container-row" style="justify-content: center;">
+                <button class="btn btn-danger" type="button" onclick="deleteRows()"> - </button>
+                <p id="row-counts" style="padding: 10px;">1</p>
+                <button class="btn btn-danger" type="button" onclick="addRows()"> + </button>
+            </div>
+            <div>&nbsp;</div>
+
+            <p align="center">Modify Columns</p>
+            <div class="flex-container-row" style="justify-content: center;">
+                <button class="btn btn-danger" type="button" onclick="deleteColumns()"> - </button>
+                <p id="col-counts" style="padding: 10px;">5</p>
+                <button class="btn btn-danger" type="button" onclick="addColumns()"> + </button>
+            </div>
+        </div>
+
+
+        <div id="main_wall" class="flex-container-col" style="padding: 20px;">
+            <div id="row_1" class="flex-container-row">
+                <div id="row_1_col_1" class="tiles" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+                <div id="row_1_col_2" class="tiles" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+                <div id="row_1_col_3" class="tiles" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+                <div id="row_1_col_4" class="tiles" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+                <div id="row_1_col_5" class="tiles" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            </div>
+        </div>
+    </div>
+    <br>
+    <script type="text/javascript" id="delete_node_script">
+
+        let current_element;
+
+        document.addEventListener('mouseover', function (e) {
+            let document_element = document.getElementsByClassName("tiles")
+    
+            $(document_element).bind("contextmenu",function(e){
+                e.preventDefault();
+                current_element = e.currentTarget.id;
+                $("#cntnr").css("left",e.pageX);
+                $("#cntnr").css("top",e.pageY);
+                // $("#cntnr").hide(100);        
+                $("#cntnr").fadeIn(200,startFocusOut());      
+            });
+    
+            function startFocusOut(){
+                $(document).on("click",function(){
+                $("#cntnr").hide();        
+                $(document).off("click");
+                });
+            }
+        });
+
+        function deleteImage(){
+            document.getElementById(current_element).innerHTML = ""
+        }
+  
+  
+    //]]></script>
+</body>
+</html>
