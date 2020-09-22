@@ -16,7 +16,7 @@ class CreateNewDesign(object):
     def _pwd(self):
         attachment_directory = str(self.tile_number) + '_' + str(get_random_string(length=16))
         files_path = 'wall_designs_18_12/{attachment_directory}'.format(attachment_directory=attachment_directory)
-        pwd = settings.STATIC_URL + files_path
+        pwd = settings.STATIC_FILES_URL + files_path
         return pwd, files_path
     
     def _create_attachment_directory(self):
