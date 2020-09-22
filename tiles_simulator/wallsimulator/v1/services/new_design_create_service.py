@@ -16,7 +16,7 @@ class CreateNewDesign(object):
     def _pwd(self):
         attachment_directory = str(self.tile_number) + '_' + str(get_random_string(length=16))
         files_path = 'wall_designs_18_12/{attachment_directory}'.format(attachment_directory=attachment_directory)
-        pwd = settings.STATIC_FILES_URL + files_path
+        pwd = settings.STATIC_FILES_PATH + files_path
         return pwd, files_path
     
     def _create_attachment_directory(self):
@@ -35,9 +35,9 @@ class CreateNewDesign(object):
     def _create_model_data(self):
         model_data = {
             'tile_number' : self.tile_number,
-            'light_image_url' : settings.STATIC_HOST_URL + self.files_path + self._save_files_in_file_system(self.light_image, 'light'),
-            'high_lighter_1_image_url' : settings.STATIC_HOST_URL + self.files_path +  self._save_files_in_file_system(self.high_lighter_1_image, 'high_lighter_1'),
-            'dark_image_url' : settings.STATIC_HOST_URL + self.files_path + self._save_files_in_file_system(self.dark_image, 'dark')
+            'light_image_url' : settings.STATIC_URL + self.files_path + self._save_files_in_file_system(self.light_image, 'light'),
+            'high_lighter_1_image_url' : settings.STATIC_URL + self.files_path +  self._save_files_in_file_system(self.high_lighter_1_image, 'high_lighter_1'),
+            'dark_image_url' : settings.STATIC_URL + self.files_path + self._save_files_in_file_system(self.dark_image, 'dark')
         }
         return model_data
 
